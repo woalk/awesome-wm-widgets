@@ -18,15 +18,26 @@ local function worker(user_args)
 
     --- Main ram widget shown on wibar
     ramgraph_widget = wibox.widget {
-        border_width = 0,
-        colors = {
-           color_used,
-           color_free,
-           color_buf,
+        wibox.widget {
+            markup = "0/0",
+            align = 'right',
+            valign = 'center',
+            widget = wibox.widget.textbox,
+            id = 'txt',
         },
-        display_labels = false,
-        forced_width = 25,
-        widget = wibox.widget.piechart
+        wibox.widget {
+            border_width = 0,
+            colors = {
+               color_used,
+               color_free,
+               color_buf,
+            },
+            display_labels = false,
+            forced_width = 25,
+            widget = wibox.widget.piechart,
+            id = 'pie',
+        },
+        layout = wibox.layout.fixed.horizontal,
     }
 
     --- Widget which is shown when user clicks on the ram widget
@@ -62,10 +73,11 @@ local function worker(user_args)
                 stdout:match('(%d+)%s*(%d+)%s*(%d+)%s*(%d+)%s*(%d+)%s*(%d+)%s*Swap:%s*(%d+)%s*(%d+)%s*(%d+)')
 
             if widget_show_buf then
-                widget.data = { used, free, buff_cache }
+                widget.children[2].data = { used, free, buff_cache }
             else
-                widget.data = { used, total-used }
+                widget.children[2].data = { used, total-used }
             end
+            widget.children[1].markup = string.format("%.1fG/%.0fG", (used / 1048576), (total / 1048576))
 
             if popup.visible then
                popup:get_widget().data_list = {
